@@ -13,23 +13,89 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Unbounded:wght@200;400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="/gridstack.min.css"/>
 <style>
-:root {
-  --bg:#f0f2f5; --surface:#fff; --surface2:#f5f7fa;
+/* ── Beit Light (default) ── */
+:root, [data-theme="beit-light"] {
+  --bg:#f1f5f9; --surface:#ffffff; --surface2:#f8fafc;
   --border:rgba(0,0,0,0.07); --border2:rgba(0,0,0,0.13);
-  --text:#1a1d24; --muted:#8a909e;
-  --accent:#1a7fc1; --accent2:#1a9c6e; --accent3:#d4840a; --accent4:#7c4fc4; --danger:#c93535;
-  --grid-line:rgba(0,0,0,0.04); --shadow:0 1px 4px rgba(0,0,0,0.07);
+  --text:#0f172a; --muted:#94a3b8;
+  --accent:#38bdf8; --accent2:#22c55e; --accent3:#a78bfa; --accent4:#fb923c; --danger:#f87171;
+  --grid-line:rgba(56,189,248,0.06); --shadow:0 1px 4px rgba(0,0,0,0.07);
+  --bg-pattern: linear-gradient(rgba(0,0,0,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.05) 1px,transparent 1px);
+  --bg-size: 40px 40px
 }
-[data-theme="dark"] {
-  --bg:#0d0f12; --surface:#141720; --surface2:#1c2030;
+/* ── Beit Dark ── */
+[data-theme="beit-dark"] {
+  --bg:#0f172a; --surface:#1e293b; --surface2:#273449;
   --border:rgba(255,255,255,0.06); --border2:rgba(255,255,255,0.12);
-  --text:#e8eaf0; --muted:#5a6070;
-  --accent:#4fc3f7; --accent2:#81e6b0; --accent3:#ffb347; --accent4:#cf9fff; --danger:#ff6b6b;
-  --grid-line:rgba(79,195,247,0.03); --shadow:0 1px 6px rgba(0,0,0,0.4);
+  --text:#e2e8f0; --muted:#64748b;
+  --accent:#38bdf8; --accent2:#22c55e; --accent3:#a78bfa; --accent4:#fb923c; --danger:#f87171;
+  --grid-line:rgba(56,189,248,0.04); --shadow:0 1px 6px rgba(0,0,0,0.4);
+  --bg-pattern: linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);
+  --bg-size: 40px 40px
+}
+/* ── Dracula ── */
+[data-theme="dracula"] {
+  --bg:#282a36; --surface:#363847; --surface2:#414356;
+  --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.14);
+  --text:#f8f8f2; --muted:#6272a4;
+  --accent:#bd93f9; --accent2:#50fa7b; --accent3:#ffb86c; --accent4:#ff79c6; --danger:#ff5555;
+  --grid-line:rgba(189,147,249,0.04); --shadow:0 1px 6px rgba(0,0,0,0.5);
+  --bg-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Ctext x='12' y='38' font-size='26' opacity='0.1' fill='%23bd93f9'%3E🌙%3C/text%3E%3C/svg%3E");
+  --bg-size: 60px 60px
+}
+/* ── Nord ── */
+[data-theme="nord"] {
+  --bg:#2e3440; --surface:#3b4252; --surface2:#434c5e;
+  --border:rgba(255,255,255,0.06); --border2:rgba(255,255,255,0.12);
+  --text:#eceff4; --muted:#7b88a0;
+  --accent:#88c0d0; --accent2:#a3be8c; --accent3:#ebcb8b; --accent4:#b48ead; --danger:#bf616a;
+  --grid-line:rgba(136,192,208,0.04); --shadow:0 1px 6px rgba(0,0,0,0.4);
+  --bg-pattern: linear-gradient(rgba(136,192,208,0.08) 1px,transparent 1px);
+  --bg-size: 100% 32px
+}
+/* ── Catppuccin Mocha ── */
+[data-theme="catppuccin"] {
+  --bg:#1e1e2e; --surface:#313244; --surface2:#45475a;
+  --border:rgba(255,255,255,0.06); --border2:rgba(255,255,255,0.12);
+  --text:#cdd6f4; --muted:#6c7086;
+  --accent:#89b4fa; --accent2:#a6e3a1; --accent3:#f9e2af; --accent4:#cba6f7; --danger:#f38ba8;
+  --grid-line:rgba(137,180,250,0.04); --shadow:0 1px 6px rgba(0,0,0,0.5);
+  --bg-pattern: radial-gradient(rgba(137,180,250,0.12) 1.5px,transparent 1.5px);
+  --bg-size: 28px 28px
+}
+/* ── Forest ── */
+[data-theme="forest"] {
+  --bg:#1a2e1a; --surface:#243524; --surface2:#2d4a2d;
+  --border:rgba(255,255,255,0.06); --border2:rgba(255,255,255,0.12);
+  --text:#d4edda; --muted:#6a9f6a;
+  --accent:#4ade80; --accent2:#86efac; --accent3:#fbbf24; --accent4:#34d399; --danger:#f87171;
+  --grid-line:rgba(74,222,128,0.05); --shadow:0 1px 6px rgba(0,0,0,.5);
+  --bg-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Ctext x='15' y='35' font-size='24' opacity='0.08' fill='%234ade80'%3E🌲%3C/text%3E%3C/svg%3E");
+  --bg-size: 60px 60px
+}
+/* ── Sunrise ── */
+[data-theme="sunrise"] {
+  --bg:#1f1200; --surface:#2e1a00; --surface2:#3d2400;
+  --border:rgba(255,255,255,0.06); --border2:rgba(255,255,255,0.12);
+  --text:#fff7e0; --muted:#c09060;
+  --accent:#fb923c; --accent2:#fbbf24; --accent3:#f472b6; --accent4:#ef4444; --danger:#ef4444;
+  --grid-line:rgba(251,146,60,0.05); --shadow:0 1px 6px rgba(0,0,0,.5);
+  --bg-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='70'%3E%3Ctext x='15' y='42' font-size='28' opacity='0.1' fill='%23fbbf24'%3E☀️%3C/text%3E%3C/svg%3E");
+  --bg-size: 70px 70px
+}
+/* ── Rosé Pine ── */
+[data-theme="rose-pine"] {
+  --bg:#191724; --surface:#26233a; --surface2:#403d52;
+  --border:rgba(255,255,255,0.06); --border2:rgba(255,255,255,0.12);
+  --text:#e0def4; --muted:#6e6a86;
+  --accent:#c4a7e7; --accent2:#9ccfd8; --accent3:#f6c177; --accent4:#ebbcba; --danger:#eb6f92;
+  --grid-line:rgba(196,167,231,0.04); --shadow:0 1px 6px rgba(0,0,0,0.5);
+  --bg-pattern: repeating-linear-gradient(45deg,rgba(196,167,231,0.05) 0,rgba(196,167,231,0.05) 1px,transparent 0,transparent 50%);
+  --bg-size: 20px 20px
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;min-height:100vh;padding:20px;transition:background .25s,color .25s;}
-.grid-bg{position:fixed;inset:0;z-index:0;background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;}
+.grid-bg{position:fixed;inset:0;z-index:0;background-image:var(--bg-pattern);background-size:var(--bg-size,40px 40px);pointer-events:none;}
 .wrapper{position:relative;z-index:1;max-width:1400px;margin:0 auto;}
 
 /* Header */
@@ -255,9 +321,7 @@ a.link-item:hover{background:var(--surface2);}
         <div id="plugin-menu-items"></div>
       </div>
     </div>
-    <button class="hdr-btn" onclick="toggleTheme()">
-      <span id="theme-icon">☀</span><span id="theme-label">LIGHT</span>
-    </button>
+    <button class="hdr-btn" id="theme-btn" onclick="openThemePicker()">🎨 ТЕМА</button>
     <div>
       <div id="clock">--:--:--</div>
       <div id="date">...</div>
@@ -374,14 +438,50 @@ let grid, editMode = false, modalCb = null, selColor = 'accent';
 let saveTimer, notesSaveTimer;
 
 // ── Theme ──────────────────────────────────────────────
+const THEMES = [
+  {id:'beit-dark',   label:'Beit Dark',   icon:'🌑', preview:'#0f172a', accent:'#38bdf8'},
+  {id:'beit-light',  label:'Beit Light',  icon:'☀️',  preview:'#f1f5f9', accent:'#0ea5e9'},
+  {id:'dracula',     label:'Dracula',     icon:'🧛', preview:'#282a36', accent:'#bd93f9'},
+  {id:'nord',        label:'Nord',        icon:'❄️',  preview:'#2e3440', accent:'#88c0d0'},
+  {id:'rose-pine',   label:'Rosé Pine',   icon:'🌹', preview:'#191724', accent:'#c4a7e7'},
+  {id:'catppuccin',  label:'Catppuccin',  icon:'☕', preview:'#1e1e2e', accent:'#89b4fa'},
+  {id:'forest',      label:'Forest',      icon:'🌲', preview:'#1a2e1a', accent:'#4ade80'},
+  {id:'sunrise',     label:'Sunrise',     icon:'🌅', preview:'#2d1a0e', accent:'#fb923c'},
+];
 function applyTheme(t) {
   document.documentElement.setAttribute('data-theme', t);
-  document.getElementById('theme-icon').textContent = t==='dark'?'☾':'☀';
-  document.getElementById('theme-label').textContent = t==='dark'?'DARK':'LIGHT';
   localStorage.setItem('db-theme', t);
 }
-function toggleTheme(){ applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'); }
-applyTheme(localStorage.getItem('db-theme')||'light');
+function toggleTheme(){ openThemePicker(); }
+applyTheme(localStorage.getItem('db-theme')||'beit-dark');
+
+function openThemePicker() {
+  let existing = document.getElementById('theme-picker-modal');
+  if (existing) { existing.remove(); return; }
+  const modal = document.createElement('div');
+  modal.id = 'theme-picker-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:24px;min-width:320px;">
+      <div style="font-family:'Unbounded',sans-serif;font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:16px;">ТЕМА ОФОРМЛЕНИЯ</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        ${THEMES.map(t => {
+          const active = document.documentElement.getAttribute('data-theme')===t.id;
+          return `<div onclick="applyTheme('${t.id}');document.getElementById('theme-picker-modal').remove();"
+            style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:${t.preview};border:2px solid ${active?t.accent:'transparent'};border-radius:10px;cursor:pointer;transition:all .15s;"
+            onmouseover="this.style.borderColor='${t.accent}'" onmouseout="this.style.borderColor='${active?t.accent:'transparent'}'">
+            <span style="font-size:20px;">${t.icon}</span>
+            <span style="font-size:12px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);font-weight:500;">${t.label}</span>
+            ${active?`<span style="margin-left:auto;color:${t.accent};font-size:14px;">✓</span>`:''}
+          </div>`;}).join('')}
+      </div>
+      <div style="text-align:right;margin-top:14px;">
+        <button onclick="document.getElementById('theme-picker-modal').remove()" style="background:none;border:1px solid var(--border2);border-radius:8px;padding:6px 14px;color:var(--muted);cursor:pointer;font-size:12px;">Закрыть</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
 
 // ── Clock ──────────────────────────────────────────────
 function updateClock(){

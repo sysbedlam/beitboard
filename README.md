@@ -30,7 +30,7 @@ Self-hosted dashboard для домашнего сервера и NAS.
 ### Установка
 
 ```bash
-git clone https://github.com/beit24/beitboard.git
+git clone https://github.com/sysbedlam/beitboard.git
 cd beitboard
 docker compose up -d
 ```

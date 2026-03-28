@@ -190,6 +190,8 @@ a.link-item:hover{background:var(--surface2);}
 
 .add-section-btn{display:none;width:100%;background:var(--surface);border:1px dashed var(--border2);border-radius:12px;padding:14px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);text-align:center;transition:all .15s;letter-spacing:1px;margin-top:12px;}
 .edit-mode .add-section-btn{display:block;}
+.float-bar{display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:500;background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:8px 12px;box-shadow:0 8px 32px rgba(0,0,0,.4);align-items:center;gap:8px;}
+.edit-mode .float-bar{display:flex;}
 .add-section-btn:hover{border-color:var(--accent);color:var(--accent);}
 
 /* Add widget menu */
@@ -237,7 +239,7 @@ a.link-item:hover{background:var(--surface2);}
     <button class="hdr-btn" id="edit-btn" onclick="toggleEdit()">✏ EDIT</button>
     <button class="hdr-btn" onclick="checkAllHosts()" title="Проверить доступность">◉ СТАТУС</button>
     <div class="add-widget-wrap" id="add-widget-wrap" style="display:none;position:relative;">
-      <button class="hdr-btn active" onclick="toggleAddMenu()">＋ ДОБАВИТЬ</button>
+      <button class="hdr-btn active" onclick="toggleHeaderAddMenu()">＋ ДОБАВИТЬ</button>
       <div class="add-menu" id="add-menu" style="display:none;position:absolute;top:110%;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:6px;z-index:200;min-width:190px;box-shadow:0 4px 16px rgba(0,0,0,.15);">
         <div class="add-menu-label">Секция</div>
         <div class="add-menu-item" onclick="document.getElementById('add-menu').style.display='none';openAddSection()">📁 Новая секция</div>
@@ -285,6 +287,26 @@ a.link-item:hover{background:var(--surface2);}
   <input type="text" id="icon-search" placeholder="Поиск иконки... (keenetic, nginx...)" autocomplete="off"/>
   <div class="icon-results" id="icon-results">
     <span class="icon-picker-empty">Введите название сервиса</span>
+  </div>
+</div>
+
+<!-- Floating edit bar -->
+<div class="float-bar" id="float-bar">
+  <button class="hdr-btn active" onclick="toggleEdit()" style="color:var(--accent2);border-color:var(--accent2);">✓ ГОТОВО</button>
+  <div style="width:1px;height:20px;background:var(--border2);"></div>
+  <div style="position:relative;">
+    <button class="hdr-btn active" onclick="toggleAddMenu()">＋ ДОБАВИТЬ</button>
+    <div class="add-menu" id="add-menu-float" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-20%);background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:6px;z-index:600;min-width:190px;box-shadow:0 8px 32px rgba(0,0,0,.4);">
+      <div class="add-menu-label">Секция</div>
+      <div class="add-menu-item" onclick="document.getElementById('add-menu-float').style.display='none';openAddSection()">📁 Новая секция</div>
+      <div class="add-menu-sep"></div>
+      <div class="add-menu-label">Виджеты</div>
+      <div class="add-menu-item" onclick="addSystemWidget('weather','Погода')">🌤 Погода</div>
+      <div class="add-menu-item" onclick="addSystemWidget('calendar','Календарь')">📅 Календарь</div>
+      <div class="add-menu-item" onclick="addSystemWidget('notes','Заметки')">📝 Заметки</div>
+      <div class="add-menu-item" onclick="addSystemWidget('todos','Задачи')">✅ Задачи</div>
+      <div id="plugin-menu-items-float"></div>
+    </div>
   </div>
 </div>
 
@@ -409,15 +431,24 @@ function toggleEdit(){
   if(!editMode) document.getElementById('add-menu').style.display='none';
 }
 
-function toggleAddMenu(){
-  const m=document.getElementById('add-menu');
-  m.style.display=m.style.display==='none'?'block':'none';
+function toggleHeaderAddMenu(){
+  const m = document.getElementById('add-menu');
+  if(m) m.style.display = m.style.display === 'block' ? 'none' : 'block';
 }
 
+function toggleAddMenu(){
+  const id = editMode ? "add-menu-float" : "add-menu";
+  const m = document.getElementById(id);
+  if(m) m.style.display = m.style.display === "block" ? "none" : "block";
+}
 
 
 // Close add menu on outside click
 document.addEventListener('click',e=>{
+  if(!e.target.closest('.float-bar') && !e.target.closest('#add-menu-float')){
+    const mf = document.getElementById('add-menu-float');
+    if(mf) mf.style.display='none';
+  }
   if(!e.target.closest('.add-widget-wrap')){
     const m=document.getElementById('add-menu');
     if(m) m.style.display='none';
@@ -623,7 +654,7 @@ function buildSectionWidget(s){
   const linksHtml=s.links.map(l=>`
     <a class="link-item" href="${l.url}" target="_blank" draggable="false" data-lid="${l.id}" data-sid="${s.id}">
       <div class="link-drag edit-only" title="Перетащить">⠿</div>
-      <div class="link-icon" id="icon-${l.id}" onclick="openIconPicker(event,${l.id})">
+      <div class="link-icon" id="icon-${l.id}" onclick="if(editMode){openIconPicker(event,${l.id});event.preventDefault();event.stopPropagation();return false;}">
         <span class="icon-fallback">${l.icon||l.name.slice(0,2).toUpperCase()}</span>
       </div>
       <div class="link-name">${l.name}</div>
@@ -916,14 +947,19 @@ async function addLink(sid){
   const container=document.getElementById(`links-${sid}`);
   const div=document.createElement('a');
   div.className='link-item'; div.href=l.url; div.target='_blank';
+  div.dataset.lid=l.id; div.dataset.sid=sid;
   div.innerHTML=`
-    <div class="link-icon">${l.icon||l.name.slice(0,2).toUpperCase()}</div>
+    <div class="link-drag" title="Перетащить">⠿</div>
+    <div class="link-icon" id="icon-${l.id}" onclick="if(editMode){openIconPicker(event,${l.id});event.preventDefault();event.stopPropagation();return false;}">
+      <span class="icon-fallback">${l.icon||l.name.slice(0,2).toUpperCase()}</span>
+    </div>
     <div class="link-name">${l.name}</div>
     <div class="link-url">${shortUrl(l.url)}</div>
     <div class="link-status" data-url="${l.url}"></div>
     <button class="link-del" onclick="deleteLink(event,${l.id})" title="Удалить">×</button>`;
   container.appendChild(div);
   loadFavicons([l]);
+  if (editMode) initLinkDrag(container, sid);
 }
 
 // ── Link drag & drop ──────────────────────────────────
@@ -976,7 +1012,7 @@ async function reloadSection(sid) {
   container.innerHTML = s.links.map(l => `
     <a class="link-item" href="${l.url}" target="_blank" draggable="false" data-lid="${l.id}" data-sid="${s.id}">
       <div class="link-drag edit-only" title="Перетащить">⠿</div>
-      <div class="link-icon" id="icon-${l.id}" onclick="openIconPicker(event,${l.id})">
+      <div class="link-icon" id="icon-${l.id}" onclick="if(editMode){openIconPicker(event,${l.id});event.preventDefault();event.stopPropagation();return false;}">
         <span class="icon-fallback">${l.icon||l.name.slice(0,2).toUpperCase()}</span>
       </div>
       <div class="link-name">${l.name}</div>
@@ -1193,14 +1229,17 @@ async function selectIcon(name) {
     console.log(`[BeitBoard] Loaded ${plugins.length} widget plugins:`, plugins);
     // Добавляем плагин-виджеты в меню
     const pluginMenu = document.getElementById('plugin-menu-items');
+    const pluginMenuFloat = document.getElementById('plugin-menu-items-float');
     if (pluginMenu && plugins.length) {
-      pluginMenu.innerHTML = '<div class="add-menu-sep"></div><div class="add-menu-label">Плагины</div>' +
+      const pluginHtml = '<div class="add-menu-sep"></div><div class="add-menu-label">Плагины</div>' +
         plugins.map(f => {
           const type = f.replace('.js','');
           const def = Dashboard.widgets[type];
           if (!def) return '';
           return `<div class="add-menu-item" onclick="addSystemWidget('${type}','${def.label}')">${def.icon||'🔧'} ${def.label}</div>`;
         }).join('');
+      if(pluginMenu) pluginMenu.innerHTML = pluginHtml;
+      if(pluginMenuFloat) pluginMenuFloat.innerHTML = pluginHtml;
     }
   } catch(e) {
     console.warn('[BeitBoard] Could not load widget plugins:', e);

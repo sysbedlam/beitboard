@@ -6,6 +6,8 @@ Self-hosted dashboard для домашнего сервера и NAS.
 
 ![BeitBoard](https://img.shields.io/badge/version-1.0-38bdf8) ![Docker](https://img.shields.io/badge/docker-compose-22c55e) ![Python](https://img.shields.io/badge/python-3.11-38bdf8)
 
+**[🚀 Живое демо](https://dashboard.beit24.ru)** · **[📖 Страница проекта](https://beit24.ru/projects/beitboard.php)**
+
 ---
 
 ## Возможности
@@ -30,7 +32,7 @@ Self-hosted dashboard для домашнего сервера и NAS.
 ### Установка
 
 ```bash
-git clone https://github.com/beit24/beitboard.git
+git clone https://github.com/sysbedlam/beitboard.git
 cd beitboard
 docker compose up -d
 ```

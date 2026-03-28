@@ -124,6 +124,9 @@ a.link-item:hover{background:var(--surface2);}
 .icon-result img{width:24px;height:24px;object-fit:contain;}
 .icon-picker-empty{font-size:11px;color:var(--muted);padding:8px 0;}
 
+.link-edit{display:none;background:none;border:none;cursor:pointer;color:var(--muted);font-size:12px;padding:0 2px;line-height:1;transition:color .12s;}
+.edit-mode .link-edit{display:block;}
+.link-edit:hover{color:var(--accent);}
 .link-del{display:none;background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;padding:0 2px;line-height:1;transition:color .12s;}
 .edit-mode .link-del{display:block;}
 .link-del:hover{color:var(--danger);}
@@ -401,8 +404,17 @@ document.getElementById('search-input').addEventListener('keydown',function(e){
 async function api(method, path, body){
   const opts={method,headers:{'Content-Type':'application/json'}};
   if(body) opts.body=JSON.stringify(body);
-  const r=await fetch(API+path,opts);
-  return r.json();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000); // 8 сек таймаут
+  try {
+    const r = await fetch(API+path, {...opts, signal: controller.signal});
+    clearTimeout(timer);
+    return r.json();
+  } catch(e) {
+    clearTimeout(timer);
+    if(e.name === 'AbortError') console.warn('API timeout:', path);
+    throw e;
+  }
 }
 
 // ── GridStack save layout ──────────────────────────────
@@ -652,7 +664,7 @@ function shortUrl(url){
 
 function buildSectionWidget(s){
   const linksHtml=s.links.map(l=>`
-    <a class="link-item" href="${l.url}" target="_blank" draggable="false" data-lid="${l.id}" data-sid="${s.id}">
+    <a class="link-item" href="${l.url}" target="_blank" draggable="false" data-lid="${l.id}" data-sid="${s.id}" onclick="if(editMode){event.preventDefault();return false;}">
       <div class="link-drag edit-only" title="Перетащить">⠿</div>
       <div class="link-icon" id="icon-${l.id}" onclick="if(editMode){openIconPicker(event,${l.id});event.preventDefault();event.stopPropagation();return false;}">
         <span class="icon-fallback">${l.icon||l.name.slice(0,2).toUpperCase()}</span>
@@ -660,7 +672,8 @@ function buildSectionWidget(s){
       <div class="link-name">${l.name}</div>
       <div class="link-url">${shortUrl(l.url)}</div>
       <div class="link-status" data-url="${l.url}"></div>
-      <button class="link-del" onclick="deleteLink(event,${l.id})" title="Удалить">×</button>
+      <button class="link-edit" data-lid="${l.id}" data-name="${l.name.replace(/"/g,'&quot;')}" data-url="${l.url.replace(/"/g,'&quot;')}" onmousedown="editLinkBtn(event,this)" title="Редактировать" style="position:relative;z-index:10;">✎</button>
+      <button class="link-del" onmousedown="deleteLink(event,${l.id})" title="Удалить">×</button>
     </a>`).join('');
   return `
     <div class="widget c-${s.color}" id="widget-section-${s.id}" data-wid="section-${s.id}" data-title="${s.title}">
@@ -915,17 +928,18 @@ function openAddSection(){
 }
 
 function openEditSection(id,title,color){
-  openModal('Редактировать секцию',true,false,true,title,'',color,async()=>{
+  openModal('Редактировать секцию',true,false,true,title,'',color,()=>{
     const name=document.getElementById('modal-name').value.trim();
     if(!name) return;
-    await api('PUT',`/api/sections/${id}`,{title:name,color:selColor});
     closeModal();
-    // Обновить заголовок и цвет без перестройки грида
+    // Мгновенно обновляем UI
     const widget=document.getElementById(`widget-section-${id}`);
     if(widget){
       widget.className=`widget c-${selColor}`;
       widget.querySelector('.widget-title').textContent=name;
     }
+    // Сохраняем в БД в фоне
+    api('PUT',`/api/sections/${id}`,{title:name,color:selColor});
   });
 }
 
@@ -940,9 +954,20 @@ async function addLink(sid){
   const name=document.getElementById(`ln-name-${sid}`).value.trim();
   const url=document.getElementById(`ln-url-${sid}`).value.trim();
   if(!name||!url) return;
-  const l=await api('POST',`/api/sections/${sid}/links`,{name,url});
   document.getElementById(`ln-name-${sid}`).value='';
   document.getElementById(`ln-url-${sid}`).value='';
+  // Мгновенно добавляем в UI с временным id
+  const tmpId = Date.now();
+  const l = {id: tmpId, name, url, icon: null};
+  // Сохраняем в БД в фоне и обновляем id
+  api('POST',`/api/sections/${sid}/links`,{name,url}).then(real => {
+    const el = document.getElementById(`icon-${tmpId}`);
+    if(el) { el.id = `icon-${real.id}`; el.setAttribute('onclick', `if(editMode){openIconPicker(event,${real.id});event.preventDefault();event.stopPropagation();return false;}`); }
+    const btn = document.querySelector(`[onclick*="deleteLink(event,${tmpId})"]`);
+    if(btn) btn.setAttribute('onclick', `deleteLink(event,${real.id})`);
+    const drag = document.querySelector(`[data-lid="${tmpId}"]`);
+    if(drag) { drag.dataset.lid = real.id; }
+  });
   // Добавить строку в список
   const container=document.getElementById(`links-${sid}`);
   const div=document.createElement('a');
@@ -956,7 +981,8 @@ async function addLink(sid){
     <div class="link-name">${l.name}</div>
     <div class="link-url">${shortUrl(l.url)}</div>
     <div class="link-status" data-url="${l.url}"></div>
-    <button class="link-del" onclick="deleteLink(event,${l.id})" title="Удалить">×</button>`;
+    <button class="link-edit" data-lid="${l.id}" data-name="${l.name.replace(/"/g,'&quot;')}" data-url="${l.url.replace(/"/g,'&quot;')}" onmousedown="editLinkBtn(event,this)" title="Редактировать" style="position:relative;z-index:10;">✎</button>
+      <button class="link-del" onmousedown="deleteLink(event,${l.id})" title="Удалить">×</button>`;
   container.appendChild(div);
   loadFavicons([l]);
   if (editMode) initLinkDrag(container, sid);
@@ -1010,7 +1036,7 @@ async function reloadSection(sid) {
   const container = document.getElementById(`links-${sid}`);
   if (!container) return;
   container.innerHTML = s.links.map(l => `
-    <a class="link-item" href="${l.url}" target="_blank" draggable="false" data-lid="${l.id}" data-sid="${s.id}">
+    <a class="link-item" href="${l.url}" target="_blank" draggable="false" data-lid="${l.id}" data-sid="${s.id}" onclick="if(editMode){event.preventDefault();return false;}">
       <div class="link-drag edit-only" title="Перетащить">⠿</div>
       <div class="link-icon" id="icon-${l.id}" onclick="if(editMode){openIconPicker(event,${l.id});event.preventDefault();event.stopPropagation();return false;}">
         <span class="icon-fallback">${l.icon||l.name.slice(0,2).toUpperCase()}</span>
@@ -1018,14 +1044,44 @@ async function reloadSection(sid) {
       <div class="link-name">${l.name}</div>
       <div class="link-url">${shortUrl(l.url)}</div>
       <div class="link-status" data-url="${l.url}"></div>
-      <button class="link-del" onclick="deleteLink(event,${l.id})" title="Удалить">×</button>
+      <button class="link-edit" data-lid="${l.id}" data-name="${l.name.replace(/"/g,'&quot;')}" data-url="${l.url.replace(/"/g,'&quot;')}" onmousedown="editLinkBtn(event,this)" title="Редактировать" style="position:relative;z-index:10;">✎</button>
+      <button class="link-del" onmousedown="deleteLink(event,${l.id})" title="Удалить">×</button>
     </a>`).join('');
   initLinkDrag(container, sid);
   if(s.links) loadFavicons(s.links);
 }
 
+function editLinkBtn(e, btn) {
+  e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+  const lid = btn.dataset.lid;
+  const name = btn.dataset.name;
+  const url = btn.dataset.url;
+  editLink(e, lid, name, url);
+}
+
+function editLink(e, lid, name, url) {
+  e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+  openModal('Редактировать ссылку', false, true, true, name, url, 'accent', async () => {
+    const newName = document.getElementById('modal-name').value.trim();
+    const newUrl  = document.getElementById('modal-url').value.trim();
+    if (!newName || !newUrl) return;
+    closeModal();
+    // Обновляем UI мгновенно
+    const linkEl = document.querySelector('[data-lid="'+lid+'"]');
+    if (linkEl) {
+      linkEl.href = newUrl;
+      const nameEl = linkEl.querySelector('.link-name');
+      const urlEl  = linkEl.querySelector('.link-url');
+      if (nameEl) nameEl.textContent = newName;
+      if (urlEl)  urlEl.textContent  = shortUrl(newUrl);
+    }
+    // Сохраняем в фоне
+    api('PUT', '/api/links/'+lid, {name: newName, url: newUrl});
+  });
+}
+
 async function deleteLink(e,lid){
-  e.preventDefault(); e.stopPropagation();
+  e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
   await api('DELETE',`/api/links/${lid}`);
   e.target.closest('a').remove();
 }

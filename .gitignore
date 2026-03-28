@@ -1,0 +1,23 @@
+# База данных — содержит личные данные
+data/dashboard.db
+data/dashboard.db.bak
+
+# Кэш фавиконов — генерируется автоматически
+data/favicons/*
+!data/favicons/.gitkeep
+
+# Python кэш
+backend/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Логи
+*.log

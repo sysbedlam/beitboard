@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+
+  backend:
+    image: python:3.11-slim
+    container_name: beitboard-backend
+    restart: unless-stopped
+    extra_hosts:
+      - "nas:host-gateway"
+    environment:
+      - DB_PATH=/data/dashboard.db
+    volumes:
+      - ./backend/app.py:/app/app.py:ro
+      - ./backend/requirements.txt:/app/requirements.txt:ro
+      - ./data:/data
+      - ./frontend/widgets:/app/widgets:ro
+    working_dir: /app
+    command: >
+      sh -c "pip install --no-cache-dir -r requirements.txt -q &&
+             gunicorn --bind 0.0.0.0:5000 --workers 2 --timeout 15 app:app --preload"
+    networks:
+      - beitboard-net
+
+  frontend:
+    image: nginx:alpine
+    container_name: beitboard-frontend
+    restart: unless-stopped
+    ports:
+      - "8282:80"   # Порт для доступа к дашборду. Смени на нужный.
+                    # Если используешь reverse proxy (NPM и т.д.) — убери эту секцию.
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - beitboard-net
+
+networks:
+  beitboard-net:
+    driver: bridge

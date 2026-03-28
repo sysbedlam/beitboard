@@ -657,6 +657,13 @@ function getDomain(url){
   } catch{ return url; }
 }
 
+function normalizeUrl(url) {
+  url = url.trim();
+  if (!url) return url;
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  return url;
+}
+
 function shortUrl(url){
   try{const u=new URL(url);return u.hostname+(u.port?':'+u.port:'')+(u.pathname!=='/'?u.pathname.slice(0,10):'');}
   catch{return url.slice(0,20);}
@@ -952,7 +959,7 @@ async function deleteSection(id){
 // ── Link CRUD ──────────────────────────────────────────
 async function addLink(sid){
   const name=document.getElementById(`ln-name-${sid}`).value.trim();
-  const url=document.getElementById(`ln-url-${sid}`).value.trim();
+  const url=normalizeUrl(document.getElementById(`ln-url-${sid}`).value);
   if(!name||!url) return;
   document.getElementById(`ln-name-${sid}`).value='';
   document.getElementById(`ln-url-${sid}`).value='';
@@ -1063,7 +1070,7 @@ function editLink(e, lid, name, url) {
   e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
   openModal('Редактировать ссылку', false, true, true, name, url, 'accent', async () => {
     const newName = document.getElementById('modal-name').value.trim();
-    const newUrl  = document.getElementById('modal-url').value.trim();
+    const newUrl  = normalizeUrl(document.getElementById('modal-url').value);
     if (!newName || !newUrl) return;
     closeModal();
     // Обновляем UI мгновенно

@@ -23,14 +23,24 @@
   --bg-pattern: linear-gradient(rgba(0,0,0,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.05) 1px,transparent 1px);
   --bg-size: 40px 40px
 }
-/* ── Beit Dark ── */
+/* ── Beit Dark (оригинал) ── */
 [data-theme="beit-dark"] {
+  --bg:#0d0f12; --surface:#141720; --surface2:#1c2030;
+  --border:rgba(255,255,255,0.06); --border2:rgba(255,255,255,0.12);
+  --text:#e8eaf0; --muted:#5a6070;
+  --accent:#4fc3f7; --accent2:#81e6b0; --accent3:#ffb347; --accent4:#cf9fff; --danger:#ff6b6b;
+  --grid-line:rgba(79,195,247,0.03); --shadow:0 1px 6px rgba(0,0,0,0.4);
+  --bg-pattern: linear-gradient(rgba(255,255,255,0.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.015) 1px,transparent 1px);
+  --bg-size: 40px 40px
+}
+/* ── Beit Remix ── */
+[data-theme="beit-remix"] {
   --bg:#0f172a; --surface:#1e293b; --surface2:#273449;
   --border:rgba(255,255,255,0.06); --border2:rgba(255,255,255,0.12);
   --text:#e2e8f0; --muted:#64748b;
   --accent:#38bdf8; --accent2:#22c55e; --accent3:#a78bfa; --accent4:#fb923c; --danger:#f87171;
   --grid-line:rgba(56,189,248,0.04); --shadow:0 1px 6px rgba(0,0,0,0.4);
-  --bg-pattern: linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);
+  --bg-pattern: linear-gradient(rgba(56,189,248,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,0.03) 1px,transparent 1px);
   --bg-size: 40px 40px
 }
 /* ── Dracula ── */
@@ -439,7 +449,8 @@ let saveTimer, notesSaveTimer;
 
 // ── Theme ──────────────────────────────────────────────
 const THEMES = [
-  {id:'beit-dark',   label:'Beit Dark',   icon:'🌑', preview:'#0f172a', accent:'#38bdf8'},
+  {id:'beit-dark',   label:'Beit Dark',   icon:'🌑', preview:'#0d0f12', accent:'#4fc3f7'},
+  {id:'beit-remix',  label:'Beit Remix',  icon:'🎨', preview:'#0f172a', accent:'#38bdf8'},
   {id:'beit-light',  label:'Beit Light',  icon:'☀️',  preview:'#f1f5f9', accent:'#0ea5e9'},
   {id:'dracula',     label:'Dracula',     icon:'🧛', preview:'#282a36', accent:'#bd93f9'},
   {id:'nord',        label:'Nord',        icon:'❄️',  preview:'#2e3440', accent:'#88c0d0'},

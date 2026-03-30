@@ -104,6 +104,7 @@
   --bg-size: 20px 20px
 }
 *{margin:0;padding:0;box-sizing:border-box;}
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
 body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;min-height:100vh;padding:20px;transition:background .25s,color .25s;}
 .grid-bg{position:fixed;inset:0;z-index:0;background-image:var(--bg-pattern);background-size:var(--bg-size,40px 40px);pointer-events:none;}
 .wrapper{position:relative;z-index:1;max-width:1400px;margin:0 auto;}
@@ -881,6 +882,21 @@ function buildTodosWidget(wid){
 
 // ── Init GridStack ─────────────────────────────────────
 async function initDashboard() {
+  // Показываем загрузочный индикатор сразу
+  document.getElementById('welcome-msg').style.display = 'flex';
+  document.getElementById('welcome-msg').innerHTML = `
+    <div style="font-size:24px;margin-bottom:12px;animation:spin 1s linear infinite;display:inline-block;">⟳</div>
+    <div style="font-family:'Unbounded',sans-serif;font-size:10px;letter-spacing:3px;color:var(--muted);">ЗАГРУЗКА...</div>`;
+
+  // Инициализируем грид сразу — не ждём данных
+  grid=GridStack.init({
+    column:12, cellHeight:60, margin:8, animate:false,
+    staticGrid:true,
+    resizable:{handles:'se,sw,ne,nw,e,w'},
+    draggable:{handle:'.widget-header'},
+  },'#grid');
+
+  // Грузим данные
   const initData = await api('GET','/api/init');
   const sections = initData.sections;
   const widgetsData = initData.widgets;
@@ -888,15 +904,7 @@ async function initDashboard() {
   const wMap={};
   widgetsData.forEach(w=>wMap[w.id]=w);
 
-  grid=GridStack.init({
-    column:12,
-    cellHeight:60,
-    margin:8,
-    animate:true,
-    staticGrid:true,        // двигаем только в режиме edit
-    resizable:{handles:'se,sw,ne,nw,e,w'},
-    draggable:{handle:'.widget-header'},
-  },'#grid');
+  // grid уже инициализирован выше
 
   // Системные виджеты
   const systemWidgets=[
@@ -967,6 +975,7 @@ async function initDashboard() {
     });
   });
 
+  grid.setAnimation(true);
   grid.on('change', schedSave);
 
   // Пустой дашборд — подсказка
@@ -984,26 +993,29 @@ async function initDashboard() {
   });
 
   // Загружаем данные во все виджеты
-  setTimeout(()=>{
-    // Фавиконы для всех секций
+  // Секции уже на экране — теперь грузим данные виджетов асинхронно
+  requestAnimationFrame(() => {
+    // Фавиконы
     sections.forEach(s => loadFavicons(s.links));
-    loadWeather();
-    renderCal();
+    // Заметки и задачи — быстро
     document.querySelectorAll('[id^="notes-area-"]').forEach(el => { el.value = initData.notes || ''; });
     renderAllTodos(initData.todos);
-    // Инициализируем динамические виджеты
-    widgetsData.forEach(w => {
-      if(!w.type || systemWidgets && systemWidgets.find(s=>s.id===w.id)) return;
-      if(w.type==='weather') { loadWeatherWidget(w.id); addWeatherSettingsBtn(w.id); }
-      if(w.type==='calendar') renderCalWidget(w.id);
-      if(w.type==='notes') loadNotesWidget(w.id);
-      if(w.type==='todos') loadTodosWidget(w.id);
-    });
-    // Инициализируем плагин-виджеты
-    pluginInits.forEach(({def, wid, config}) => {
-      def.init && def.init(wid, config);
-    });
-  }, 100);
+    renderCal();
+    // Погода и плагины — в фоне, не блокируют
+    setTimeout(() => {
+      loadWeather();
+      widgetsData.forEach(w => {
+        if(!w.type || systemWidgets && systemWidgets.find(s=>s.id===w.id)) return;
+        if(w.type==='weather') { loadWeatherWidget(w.id); addWeatherSettingsBtn(w.id); }
+        if(w.type==='calendar') renderCalWidget(w.id);
+        if(w.type==='notes') loadNotesWidget(w.id);
+        if(w.type==='todos') loadTodosWidget(w.id);
+      });
+      pluginInits.forEach(({def, wid, config}) => {
+        def.init && def.init(wid, config);
+      });
+    }, 0);
+  });
 }
 
 // ── Section CRUD ───────────────────────────────────────

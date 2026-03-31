@@ -114,5 +114,5 @@ Dashboard.registerWidget({
 MIT — используй свободно, звёздочку не забудь ⭐
 
 ---
-
+Thanks Claude AI
 *Built with ❤️ by [beit24.ru](https://beit24.ru)*

@@ -1059,7 +1059,15 @@ function openModal(title,showColor,showUrl,showName,name,url,color,cb){
   document.getElementById('modal').classList.add('open');
   setTimeout(()=>document.getElementById('modal-name').focus(),50);
 }
-function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+function closeModal(){ 
+  document.getElementById('modal').classList.remove('open');
+  // Сбрасываем состояние модалки
+  document.getElementById('modal-ok').style.display = '';
+  document.getElementById('lbl-city').style.display = 'none';
+  document.getElementById('modal-city').value = '';
+  document.getElementById('city-results').style.display = 'none';
+  modalCb = null;
+}
 document.querySelectorAll('.color-opt').forEach(el=>el.addEventListener('click',()=>{
   selColor=el.dataset.color;
   document.querySelectorAll('.color-opt').forEach(o=>o.classList.toggle('selected',o===el));

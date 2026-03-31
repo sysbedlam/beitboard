@@ -18,7 +18,7 @@ services:
     working_dir: /app
     command: >
       sh -c "pip install --no-cache-dir -r requirements.txt -q &&
-             gunicorn --bind 0.0.0.0:5000 --workers 2 --timeout 15 app:app --preload"
+             exec gunicorn --bind 0.0.0.0:5000 --workers 2 --timeout 15 app:app --preload"
     networks:
       - beitboard-net
 
@@ -27,8 +27,7 @@ services:
     container_name: beitboard-frontend
     restart: unless-stopped
     ports:
-      - "8282:80"   # Порт для доступа к дашборду. Смени на нужный.
-                    # Если используешь reverse proxy (NPM и т.д.) — убери эту секцию.
+      - "8282:80"   # Смени порт или убери если используешь reverse proxy
     volumes:
       - ./frontend:/usr/share/nginx/html:ro
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro

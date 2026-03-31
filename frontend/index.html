@@ -107,7 +107,8 @@
 @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
 body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;min-height:100vh;padding:20px;transition:background .25s,color .25s;}
 .grid-bg{position:fixed;inset:0;z-index:0;background-image:var(--bg-pattern);background-size:var(--bg-size,40px 40px);pointer-events:none;}
-.wrapper{position:relative;z-index:1;max-width:1400px;margin:0 auto;}
+.wrapper{position:relative;z-index:1;max-width:1400px;margin:0 auto;transition:max-width .3s;}
+.wide-mode .wrapper{max-width:100%;}
 
 /* Header */
 header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px;}
@@ -333,6 +334,7 @@ a.link-item:hover{background:var(--surface2);}
       </div>
     </div>
     <button class="hdr-btn" id="theme-btn" onclick="openThemePicker()">🎨 ТЕМА</button>
+    <button class="hdr-btn" id="wide-btn" onclick="toggleWide()" title="Растянуть/сжать">⤢</button>
     <div>
       <div id="clock">--:--:--</div>
       <div id="date">...</div>
@@ -464,6 +466,20 @@ function applyTheme(t) {
   document.documentElement.setAttribute('data-theme', t);
   localStorage.setItem('db-theme', t);
 }
+function toggleWide() {
+  const wide = document.body.classList.toggle('wide-mode');
+  localStorage.setItem('bb-wide', wide ? '1' : '0');
+  document.getElementById('wide-btn').textContent = wide ? '⤡' : '⤢';
+}
+// Restore wide mode
+if (localStorage.getItem('bb-wide') === '1') {
+  document.body.classList.add('wide-mode');
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('wide-btn');
+    if (btn) btn.textContent = '⤡';
+  });
+}
+
 function toggleTheme(){ openThemePicker(); }
 applyTheme(localStorage.getItem('db-theme')||'beit-dark');
 
@@ -517,7 +533,8 @@ async function api(method, path, body){
   const opts={method,headers:{'Content-Type':'application/json'}};
   if(body) opts.body=JSON.stringify(body);
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8000); // 8 сек таймаут
+  const timeout = path === '/api/init' ? 3000 : 8000;
+  const timer = setTimeout(() => controller.abort(), timeout);
   try {
     const r = await fetch(API+path, {...opts, signal: controller.signal});
     clearTimeout(timer);
@@ -882,12 +899,6 @@ function buildTodosWidget(wid){
 
 // ── Init GridStack ─────────────────────────────────────
 async function initDashboard() {
-  // Показываем загрузочный индикатор сразу
-  document.getElementById('welcome-msg').style.display = 'flex';
-  document.getElementById('welcome-msg').innerHTML = `
-    <div style="font-size:24px;margin-bottom:12px;animation:spin 1s linear infinite;display:inline-block;">⟳</div>
-    <div style="font-family:'Unbounded',sans-serif;font-size:10px;letter-spacing:3px;color:var(--muted);">ЗАГРУЗКА...</div>`;
-
   // Инициализируем грид сразу — не ждём данных
   grid=GridStack.init({
     column:12, cellHeight:60, margin:8, animate:false,
@@ -897,7 +908,21 @@ async function initDashboard() {
   },'#grid');
 
   // Грузим данные
-  const initData = await api('GET','/api/init');
+  let initData;
+  try {
+    initData = await api('GET','/api/init');
+  } catch(e) {
+    // Бэкенд недоступен — показываем приветствие
+    const w = document.getElementById('welcome-msg');
+    if (w) {
+      w.style.display = 'flex';
+      w.innerHTML = `
+        <div style="font-size:40px;margin-bottom:16px;">⚠️</div>
+        <div style="font-family:'Unbounded',sans-serif;font-size:12px;letter-spacing:3px;margin-bottom:10px;color:var(--text)">БЭКЕНД НЕДОСТУПЕН</div>
+        <div style="font-size:12px;color:var(--muted);">Запусти Docker контейнер и обнови страницу</div>`;
+    }
+    return;
+  }
   const sections = initData.sections;
   const widgetsData = initData.widgets;
 

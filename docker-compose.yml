@@ -11,6 +11,7 @@ services:
     volumes:
       - ./backend/app.py:/app/app.py:ro
       - ./backend/requirements.txt:/app/requirements.txt:ro
+      - ./backend/icons.json:/app/icons.json:ro
       - ./data:/data
       - ./frontend/widgets:/app/widgets:ro
     working_dir: /app
